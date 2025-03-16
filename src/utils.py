@@ -325,4 +325,3 @@ class HTTPStatusCodes(Enum):
     NETWORK_AUTHENTICATION_REQUIRED = 511
     """Indicates that the client needs to authenticate to gain network
     access."""
-

@@ -3,11 +3,11 @@ from mariadb.cursors import Cursor
 from dotenv import load_dotenv
 from os import environ
 from src.api.models.AuthModel import AuthModel
+from src.api.models.Sponsor import Sponsor
 from argon2 import PasswordHasher
-from src.api.models.UserToken import UserToken
-from src.api.utils.exceptions import UserTokenNotFoundException
 from uuid import uuid4
 from typing import Tuple, Any
+
 
 class connect(Connection):
     def __init__(self, db_cluster: str | None = None):
@@ -25,7 +25,7 @@ class connect(Connection):
 
     def doAuth(self,
                auth: AuthModel,
-               request) -> Tuple[str, dict[str,Any] | None]:
+               request) -> Tuple[str, dict[str, Any] | None]:
         cursor = self.cursor()
         cursor.execute("""SELECT operatorID, password, addedBy,
                        DATE_FORMAT(addedDt, '%a, %b %e %Y %r') as 'addedDt',
@@ -52,9 +52,8 @@ class connect(Connection):
             self.commit()
             user.pop('password')
             return userToken, user
-        
-        return "", None
 
+        return "", None
 
     def get_operator_by_token(self, user_info: str) -> str | None:
         cur = self.cursor()
@@ -68,7 +67,7 @@ class connect(Connection):
         row = cur.fetchone()
         cur.close()
         return row['operatorID']
-    
+
     def does_operator_have_permission(self,
                                       operatorID: str,
                                       permission: str) -> bool:
@@ -80,9 +79,38 @@ class connect(Connection):
         row_count = cur.rowcount
         cur.close()
         return row_count > 0
-    
+
     def does_page_require_auth(self, path, method):
         cursor = self.cursor()
-        cursor.execute("""SELECT 'x' FROM AUTH_PAGES WHERE pageURL = %s AND
+        cursor.execute("""SELECT 'x' FROM AUTH_PAGES WHERE %s LIKE pageURL AND
                        allowGuest = 1 AND httpMethod = %s""", (path, method))
         return cursor.rowcount == 0
+
+    def create_sponsor(self, sponsor: Sponsor, user_token: str):
+        cursor = self.cursor()
+        operator_id = self.get_operator_by_token(user_token)
+        sql = "INSERT INTO SPONSORS (sponsorName, addedBy, updatedBy) VALUES "\
+        "(%s, %s, %s)"
+        cursor.execute(sql, (sponsor.sponsorName,
+                             operator_id,
+                             operator_id))
+        sponsorID = cursor.lastrowid
+        attributeSql = """INSERT IGNORE INTO SPONSOR_ATTRIBUTE_TYPES
+        (sponsorAttributeTypeDesc, addedBy, updatedBy) VALUES (%s, %s, %s)"""
+        selectAttr = """SELECT sponsorAttributeTypeID FROM
+        SPONSOR_ATTRIBUTE_TYPES WHERE sponsorAttributeTypeDesc = %s"""
+        addAttrSql = """INSERT INTO SPONSOR_ATTRIBUTES (sponsorID,
+        sponsorAttributeTypeID, sponsorAttributeText, addedBy, updatedBy)
+        VALUES (%s,%s,%s,%s,%s)"""
+        for attribute in sponsor.sponsorAttributes:
+            cursor.execute(attributeSql, (attribute.sponsorAttributeType,
+                                          operator_id, operator_id))
+            attributeID = cursor.lastrowid
+            if attributeID is None:
+                cursor.execute(selectAttr, (attribute.sponsorAttributeType))
+                attributeID = cursor.fetchone()['sponsorAttributeTypeID']
+            cursor.execute(addAttrSql, (sponsorID, attributeID,
+                                        attribute.sponsorAttributeValue,
+                                        operator_id, operator_id))
+        self.commit()
+        return sponsorID

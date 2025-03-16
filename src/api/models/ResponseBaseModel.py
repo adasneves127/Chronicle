@@ -1,14 +1,17 @@
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import List
+
 
 class SuccessResponse(BaseModel):
     meta: dict
     data: dict | list
     links: dict
 
+
 class sourceItem(BaseModel):
     type: str
     location: str
+
 
 class ErrorItem(BaseModel):
     status: str
@@ -16,6 +19,6 @@ class ErrorItem(BaseModel):
     title: str | None
     detail: str | None
 
+
 class FailureModel(BaseModel):
     errors: List[ErrorItem]
-

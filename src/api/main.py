@@ -1,39 +1,33 @@
 from apiApp import app
-from src.api.utils.database import connect
-from src.api.models.AuthModel import AuthModel
 from src.api.models.ResponseBaseModel import SuccessResponse, FailureModel
 from fastapi.responses import JSONResponse
-from fastapi import Response, Header
-from src.utils import HTTPStatusCodes
 from src.api.utils.permissions import AccessControl
-from typing import Annotated
-from fastapi import Request, HTTPException
+from src.api.endpoints.about import get_about_information
+from src.api.endpoints.log_in import post_login
+from src.api.endpoints.operators import get_operator
+from src.api.endpoints.sponsors import createSponsor
+from fastapi import Request
 
-
-@app.get("/about", include_in_schema=False)
-def get_about_information():
-      return {
-            "SystemName": "Evenzo",
-            "KnowledgeBase": "",
-            "Website": "",
-            "Sales": {},
-            "Support": {},
-            "ServerVersion": "1",
-            "SystemVersion": ""
-      }
-
-@app.post("/testAPIEndpoint/test2")
-def post_test_api_endpoint(
-                    user_token: Annotated[str | None, Header()] = None
-                           ) -> SuccessResponse | FailureModel:
-    return {}
-
-
+app.add_api_route('/about', get_about_information, include_in_schema=False)
+app.add_api_route('/login', post_login, name="Log In",
+                  responses={401: {"model": FailureModel},
+                             200: {"model": SuccessResponse}
+                             }, methods=['POST'])
+app.add_api_route("/sponsor/create", createSponsor.post_create_sponsor,
+                  responses={400: {"model": FailureModel},
+                             200: {"model": SuccessResponse}
+                             }, methods=['POST'])
+app.add_api_route("/OPERATORS", get_operator.get_operator,
+                  responses={404: {"model": FailureModel},
+                             200: {"model": SuccessResponse}},
+                             methods=['GET'])
 app.add_middleware(AccessControl)
+
 
 @app.exception_handler(Exception)
 async def unicorn_exception_handler(request: Request, exc: Exception):
-        return JSONResponse(
-            status_code=418,
-            content={"message": f"Oops! Did something happen? There goes a rainbow..."},
-        )
+    return JSONResponse(
+        status_code=500,
+        content={"message": "Oops! Something happened?"
+                 " There goes a rainbow..."},
+    )
