@@ -21,15 +21,16 @@ class connect(Connection):
         )
 
     def cursor(self, cursorclass: type[Cursor] = Cursor, **kwargs):
-        return super().cursor(cursorclass, **kwargs, dictionary=True)
+        return super().cursor(cursorclass, **(kwargs | {"dictionary": True}))
 
     def doAuth(self,
                auth: AuthModel,
                request) -> Tuple[str, dict[str, Any] | None]:
         cursor = self.cursor()
         cursor.execute("""SELECT operatorID, password, addedBy,
-                       DATE_FORMAT(addedDt, '%a, %b %e %Y %r') as 'addedDt',
-                       updatedBy,  DATE_FORMAT(updatedDt, '%a, %b %e %Y %r') as
+                       DATE_FORMAT(addedDt, GET_FORMAT(DATETIME,'ISO'))
+                       as 'addedDt', updatedBy,
+                       DATE_FORMAT(updatedDt, GET_FORMAT(DATETIME,'ISO')) as
                        'updatedDt' FROM OPERATORS WHERE operatorID = %s""",
                        (auth.username,))
         if cursor.rowcount != 1:
@@ -70,12 +71,12 @@ class connect(Connection):
 
     def does_operator_have_permission(self,
                                       operatorID: str,
-                                      permission: str) -> bool:
-        sql = """SELECT 'x' FROM CLASS_PERMISSIONS A, CLASS_OPERATOR_LINK B
-        WHERE A.classID = B.classID AND B.operatorID = %s AND
-        A.permissionName = %s"""
+                                      webUrl: str,
+                                      method: str) -> bool:
+        sql = """SELECT * FROM AUTH_PAGES WHERE pageURL = %s AND
+        httpMethod = %s AND (operatorID = %s or operatorID IS NULL)"""
         cur = self.cursor()
-        cur.execute(sql, (operatorID, permission))
+        cur.execute(sql, (webUrl, method, operatorID))
         row_count = cur.rowcount
         cur.close()
         return row_count > 0
@@ -114,3 +115,68 @@ class connect(Connection):
                                         operator_id, operator_id))
         self.commit()
         return sponsorID
+    
+    def get_all_operators(self):
+        all_op_data = []
+        for oID in self.get_all_operator_ids():
+            all_op_data.append(self.get_operator(oID))
+        
+        return all_op_data
+
+    def get_all_operator_ids(self):
+        cursor = self.cursor()
+        cursor.execute('SELECT operatorID from OPERATORS')
+        return [x['operatorID'] for x in cursor.fetchall()]
+
+    def get_operator(self, operatorID):
+        opCursor = self.cursor()
+        opCursor.execute("""SELECT operatorID, firstName, lastName,
+                         addedBy as 'addedBy',
+                         DATE_FORMAT(addedDt, GET_FORMAT(DATETIME,'ISO'))
+                         as 'addedDt', updatedBy as 'updatedBy',
+                         DATE_FORMAT(updatedDt, GET_FORMAT(DATETIME,'ISO'))
+                         as 'updatedDt'FROM OPERATORS WHERE operatorID=%s;""",
+                         (operatorID,))
+        operatorData = []
+        for row in opCursor.fetchall():
+            contactID = self.get_operator_contact_id(operatorID)
+            row['links'] = {
+                "self": f"/OPERATORS?operatorID={row['operatorID']}",
+                "creator": f"/OPERATORS?operatorID={row['addedBy']}",
+                "updator": f"/OPERATORS?operatorID={row['updatedBy']}",
+                "classes": [f"/CLASS?classID={x}" for x in
+                            self.get_operator_class_ids(operatorID)]                             
+            } | {
+                "contact": f"/CONTACTS?contactID={contactID}",
+                "sponsors": [
+                    f"/SPONSORS?sponsorID={x}" for x
+                    in self.get_contact_sponsors(contactID) 
+                ]
+            } if contactID else {}
+            operatorData.append(row)
+        return operatorData
+    
+    def get_operator_class_ids(self, operatorID):
+        cursor = self.cursor()
+        cursor.execute("""SELECT A.classID FROM CLASSES A,CLASS_OPERATOR_LINK B
+                       WHERE A.classID = B.classID AND B.operatorID = %s""",
+                       (operatorID,))
+        return [x['classID'] for x in cursor.fetchall()]
+        
+
+    def get_operator_contact_id(self, operatorID):
+        cursor = self.cursor()
+        cursor.execute("""SELECT A.contactID FROM CONTACTS A
+                       WHERE A.operatorID = %s""",
+                       (operatorID,))
+        row = cursor.fetchone()
+        if row is None:
+            return None
+        return row['contactID']
+    
+    def get_contact_sponsors(self, contactID):
+        cursor = self.cursor()
+        cursor.execute("""SELECT A.sponsorID FROM SPONSORS A,
+                       CONTACT_SPONSOR_LINK B WHERE A.sponsorID = B.sponsorID
+                       AND B.contactID = %s""")
+        return [x['sponsorID'] for x in cursor.fetchall()]

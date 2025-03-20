@@ -14,8 +14,9 @@ class AccessControl(BaseHTTPMiddleware):
                     request.headers.get('user-token'))
                 if oID is None:
                     raise Exception()
-                if not conn.does_operator_have_permission(oID, resource):
-                    raise Exception()
+                if not conn.does_operator_have_permission(oID, resource,
+                                                          request_method):
+                    raise Exception(f"User {oID} does not have access to ")
 
         response = await call_next(request)
         return response

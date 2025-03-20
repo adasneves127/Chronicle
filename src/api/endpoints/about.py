@@ -1,10 +1,11 @@
+from apiApp import app
+
 def get_about_information():
     return {
-        "SystemName": "Chronicle",
+        "SystemName": app.title,
         "KnowledgeBase": "",
-        "Website": "chronicle.adasneves.info",
+        "Website": "",
         "Sales": {},
         "Support": {},
-        "ServerVersion": "1",
-        "SystemVersion": ""
+        "APIVersion": app.version
     }

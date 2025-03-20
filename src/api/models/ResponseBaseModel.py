@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import List
 
 
-class SuccessResponse(BaseModel):
+class SuccessModel(BaseModel):
     meta: dict
     data: dict | list
     links: dict

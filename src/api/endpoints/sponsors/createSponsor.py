@@ -7,11 +7,12 @@ from src.utils import HTTPStatusCodes
 
 def post_create_sponsor(
                     sponsor: Sponsor,
-                    user_token: Annotated[str | None, Header()] = None
+                    user_token: Annotated[str | None, Header()] = None,
+                    db_cluster: Annotated[str | None, Header()] = None
                            ):
     sponsor_id = None
     try:
-        with connect() as conn:
+        with connect(db_cluster) as conn:
             sponsor_id = conn.create_sponsor(sponsor, user_token)
     except:
         pass
