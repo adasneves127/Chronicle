@@ -1,0 +1,14 @@
+C:\Users\Alex Dasneves\source\repos\Chronicle\MyPlugin\bin\Debug\net8.0-windows\MyPlugin.deps.json
+C:\Users\Alex Dasneves\source\repos\Chronicle\MyPlugin\bin\Debug\net8.0-windows\MyPlugin.dll
+C:\Users\Alex Dasneves\source\repos\Chronicle\MyPlugin\bin\Debug\net8.0-windows\MyPlugin.pdb
+C:\Users\Alex Dasneves\source\repos\Chronicle\MyPlugin\obj\Debug\net8.0-windows\MyPlugin.csproj.AssemblyReference.cache
+C:\Users\Alex Dasneves\source\repos\Chronicle\MyPlugin\obj\Debug\net8.0-windows\MyPlugin.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Alex Dasneves\source\repos\Chronicle\MyPlugin\obj\Debug\net8.0-windows\MyPlugin.AssemblyInfoInputs.cache
+C:\Users\Alex Dasneves\source\repos\Chronicle\MyPlugin\obj\Debug\net8.0-windows\MyPlugin.AssemblyInfo.cs
+C:\Users\Alex Dasneves\source\repos\Chronicle\MyPlugin\obj\Debug\net8.0-windows\MyPlugin.csproj.CoreCompileInputs.cache
+C:\Users\Alex Dasneves\source\repos\Chronicle\MyPlugin\obj\Debug\net8.0-windows\MyPlugin.dll
+C:\Users\Alex Dasneves\source\repos\Chronicle\MyPlugin\obj\Debug\net8.0-windows\refint\MyPlugin.dll
+C:\Users\Alex Dasneves\source\repos\Chronicle\MyPlugin\obj\Debug\net8.0-windows\MyPlugin.pdb
+C:\Users\Alex Dasneves\source\repos\Chronicle\MyPlugin\obj\Debug\net8.0-windows\ref\MyPlugin.dll
+C:\Users\Alex Dasneves\source\repos\Chronicle\MyPlugin\obj\Debug\net8.0-windows\MyPlugin.PluginForm.resources
+C:\Users\Alex Dasneves\source\repos\Chronicle\MyPlugin\obj\Debug\net8.0-windows\MyPlugin.csproj.GenerateResource.cache

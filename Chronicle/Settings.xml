@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<settings>
+	<environments>
+		<environment>
+			<name>ES1DEV</name>
+			<host>db.maria.adasneves.info</host>
+			<port>3306</port>
+			<schema>ES1DEV</schema>
+			<selected />
+		</environment>
+		<environment>
+			<name>ES1TST</name>
+			<host>db.maria.adasneves.info</host>
+			<port>3306</port>
+			<schema>ES1TST</schema>
+		</environment>
+		<environment>
+			<name>ES1PRD</name>
+			<host>db.maria.adasneves.info</host>
+			<port>3306</port>
+			<schema>ES1PRD</schema>
+		</environment>
+	</environments>
+</settings>
